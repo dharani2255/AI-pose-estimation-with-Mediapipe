@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>main.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6897bb;}
+.s3 { color: #808080;}
+.s4 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+main.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">mediapipe </span><span class="s0">as </span><span class="s1">mp</span>
+<span class="s0">import </span><span class="s1">numpy </span><span class="s0">as </span><span class="s1">np</span>
+<span class="s0">import </span><span class="s1">cv2</span>
+<span class="s1">mp_drawing = mp.solutions.drawing_utils</span>
+<span class="s1">mp_pose = mp.solutions.pose</span>
+<span class="s1">cap = cv2.VideoCapture(</span><span class="s2">0</span><span class="s1">)</span>
+
+<span class="s1">counter=</span><span class="s2">0</span>
+<span class="s1">stage=</span><span class="s0">None</span>
+<span class="s1">legstage=</span><span class="s0">None</span>
+<span class="s1">legcounter=</span><span class="s2">0</span>
+<span class="s0">def </span><span class="s1">calculate_angle(a</span><span class="s0">,</span><span class="s1">b</span><span class="s0">,</span><span class="s1">c):</span>
+    <span class="s1">a = np.array(a)</span>
+    <span class="s1">b = np.array(b)</span>
+    <span class="s1">c = np.array(c)</span>
+    <span class="s1">radians = np.arctan2(c[</span><span class="s2">1</span><span class="s1">] - b[</span><span class="s2">1</span><span class="s1">]</span><span class="s0">, </span><span class="s1">c[</span><span class="s2">0</span><span class="s1">] - b[</span><span class="s2">0</span><span class="s1">]) - np.arctan2(a[</span><span class="s2">1</span><span class="s1">] - b[</span><span class="s2">1</span><span class="s1">]</span><span class="s0">, </span><span class="s1">a[</span><span class="s2">0</span><span class="s1">] - b[</span><span class="s2">0</span><span class="s1">])</span>
+    <span class="s1">angle = np.abs(radians * </span><span class="s2">180.0 </span><span class="s1">/ np.pi)</span>
+    <span class="s0">if </span><span class="s1">angle &gt; </span><span class="s2">180.0</span><span class="s1">:</span>
+        <span class="s1">angle = </span><span class="s2">360 </span><span class="s1">- angle</span>
+    <span class="s0">return </span><span class="s1">angle</span>
+
+
+<span class="s0">with </span><span class="s1">mp_pose.Pose(min_detection_confidence=</span><span class="s2">0.5</span><span class="s0">, </span><span class="s1">min_tracking_confidence=</span><span class="s2">0.5</span><span class="s1">) </span><span class="s0">as </span><span class="s1">pose:</span>
+    <span class="s0">while </span><span class="s1">cap.isOpened():</span>
+        <span class="s1">ret</span><span class="s0">, </span><span class="s1">frame = cap.read()</span>
+            <span class="s3"># cv2.imshow('dharani',frame)</span>
+            <span class="s3"># recolor</span>
+
+        <span class="s1">image = cv2.cvtColor(frame</span><span class="s0">, </span><span class="s1">cv2.COLOR_BGR2RGB)</span>
+        <span class="s1">image.flags.writeable = </span><span class="s0">False</span>
+
+        <span class="s1">results = pose.process(image)</span>
+
+        <span class="s1">image.flags.writeable = </span><span class="s0">True</span>
+        <span class="s1">image = cv2.cvtColor(image</span><span class="s0">, </span><span class="s1">cv2.COLOR_RGB2BGR)</span>
+            <span class="s3"># extract land marks</span>
+        <span class="s0">try</span><span class="s1">:</span>
+            <span class="s1">landmarks = results.pose_landmarks.landmark</span>
+
+                <span class="s3">#Get coordinates</span>
+            <span class="s1">shoulder=[landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x</span><span class="s0">,</span><span class="s1">landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]</span>
+            <span class="s1">elbow= [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x</span><span class="s0">,</span><span class="s1">landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]</span>
+            <span class="s1">wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x</span><span class="s0">,</span><span class="s1">landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]</span>
+
+             <span class="s3">#get coordinators fr right hand</span>
+
+            <span class="s3">#get coordinators for right leg</span>
+            <span class="s1">rshoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x</span><span class="s0">,</span><span class="s1">landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]</span>
+            <span class="s1">rhip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x</span><span class="s0">,</span><span class="s1">landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]</span>
+            <span class="s1">rknee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x</span><span class="s0">,</span><span class="s1">landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]</span>
+
+            <span class="s1">angle=calculate_angle(shoulder</span><span class="s0">,</span><span class="s1">elbow</span><span class="s0">,</span><span class="s1">wrist)</span>
+            <span class="s1">legangle=calculate_angle(rshoulder</span><span class="s0">,</span><span class="s1">rhip</span><span class="s0">,</span><span class="s1">rknee)</span>
+            <span class="s3">#print(&quot;1&quot;)</span>
+                <span class="s3">#visualizng</span>
+            <span class="s1">cv2.putText(image</span><span class="s0">,</span><span class="s1">str(angle)</span><span class="s0">,</span><span class="s1">tuple(np.multiply(elbow</span><span class="s0">,</span><span class="s1">[</span><span class="s2">640</span><span class="s0">,</span><span class="s2">480</span><span class="s1">]).astype(int))</span><span class="s0">,</span><span class="s1">cv2.FONT_HERSHEY_SIMPLEX</span><span class="s0">,</span><span class="s2">0.5</span><span class="s0">,</span><span class="s1">(</span><span class="s2">255</span><span class="s0">,</span><span class="s2">255</span><span class="s0">,</span><span class="s2">255</span><span class="s1">)</span><span class="s0">,</span><span class="s2">2</span><span class="s0">,</span><span class="s1">cv2.LINE_AA)</span>
+
+            <span class="s1">cv2.putText(image</span><span class="s0">, </span><span class="s1">str(legangle)</span><span class="s0">, </span><span class="s1">tuple(np.multiply(rhip</span><span class="s0">, </span><span class="s1">[</span><span class="s2">640</span><span class="s0">, </span><span class="s2">480</span><span class="s1">]).astype(int))</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_SIMPLEX</span><span class="s0">,</span><span class="s2">0.5</span><span class="s0">, </span><span class="s1">(</span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span class="s1">)</span><span class="s0">, </span><span class="s2">2</span><span class="s0">, </span><span class="s1">cv2.LINE_AA)</span>
+            <span class="s0">if </span><span class="s1">angle &gt; </span><span class="s2">60</span><span class="s1">:</span>
+                <span class="s1">stage=</span><span class="s4">&quot;down&quot;</span>
+            <span class="s0">if </span><span class="s1">angle &lt;</span><span class="s2">30 </span><span class="s0">and </span><span class="s1">stage==</span><span class="s4">&quot;down&quot;</span><span class="s1">:</span>
+                <span class="s1">stage=</span><span class="s4">&quot;up&quot;</span>
+                <span class="s1">counter+=</span><span class="s2">1</span>
+                <span class="s3">#print(counter)</span>
+            <span class="s0">if </span><span class="s1">legangle &gt; </span><span class="s2">80</span><span class="s1">:</span>
+                <span class="s1">legstage=</span><span class="s4">&quot;down&quot;</span>
+            <span class="s0">if </span><span class="s1">legangle &lt;</span><span class="s2">80 </span><span class="s0">and </span><span class="s1">legstage==</span><span class="s4">&quot;down&quot;</span><span class="s1">:</span>
+                <span class="s1">legstage=</span><span class="s4">&quot;up&quot;</span>
+                <span class="s1">legcounter+=</span><span class="s2">1</span>
+                <span class="s3">#print(legcounter)</span>
+
+        <span class="s0">except</span><span class="s1">:</span>
+            <span class="s3">#print(&quot;2&quot;)</span>
+            <span class="s0">pass</span>
+            <span class="s3"># setup a status box</span>
+        <span class="s1">cv2.rectangle(image</span><span class="s0">, </span><span class="s1">(</span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span><span class="s0">, </span><span class="s1">(</span><span class="s2">225</span><span class="s0">, </span><span class="s2">73</span><span class="s1">)</span><span class="s0">, </span><span class="s1">(</span><span class="s2">245</span><span class="s0">, </span><span class="s2">117</span><span class="s0">, </span><span class="s2">16</span><span class="s1">)</span><span class="s0">, </span><span class="s1">-</span><span class="s2">1</span><span class="s1">)</span>
+
+        <span class="s1">cv2.rectangle(image</span><span class="s0">, </span><span class="s1">(</span><span class="s2">452</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span><span class="s0">, </span><span class="s1">(</span><span class="s2">675</span><span class="s0">, </span><span class="s2">73</span><span class="s1">)</span><span class="s0">, </span><span class="s1">(</span><span class="s2">245</span><span class="s0">, </span><span class="s2">117</span><span class="s0">, </span><span class="s2">16</span><span class="s1">)</span><span class="s0">, </span><span class="s1">-</span><span class="s2">1</span><span class="s1">)</span>
+        <span class="s3"># fill data</span>
+        <span class="s1">cv2.putText(image</span><span class="s0">, </span><span class="s4">'REPS'</span><span class="s0">, </span><span class="s1">(</span><span class="s2">15</span><span class="s0">,</span><span class="s2">12</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_SIMPLEX</span><span class="s0">, </span><span class="s2">0.5</span><span class="s0">, </span><span class="s1">(</span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s1">cv2.LINE_AA)</span>
+        <span class="s1">cv2.putText(image</span><span class="s0">, </span><span class="s1">str(counter)</span><span class="s0">, </span><span class="s1">( </span><span class="s2">10</span><span class="s0">, </span><span class="s2">60</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_SIMPLEX</span><span class="s0">, </span><span class="s2">2</span><span class="s0">, </span><span class="s1">(</span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span class="s1">)</span><span class="s0">, </span><span class="s2">2</span><span class="s0">, </span><span class="s1">cv2.LINE_AA)</span>
+        <span class="s3"># status data</span>
+        <span class="s1">cv2.putText(image</span><span class="s0">, </span><span class="s4">'Status'</span><span class="s0">, </span><span class="s1">(</span><span class="s2">65</span><span class="s0">,</span><span class="s2">12</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_SIMPLEX</span><span class="s0">, </span><span class="s2">0.5</span><span class="s0">, </span><span class="s1">(</span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s1">cv2.LINE_AA)</span>
+        <span class="s1">cv2.putText(image</span><span class="s0">, </span><span class="s1">str(stage)</span><span class="s0">, </span><span class="s1">(</span><span class="s2">60</span><span class="s0">,</span><span class="s2">60</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_SIMPLEX</span><span class="s0">, </span><span class="s2">2</span><span class="s0">, </span><span class="s1">(</span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span class="s1">)</span><span class="s0">, </span><span class="s2">2</span><span class="s0">, </span><span class="s1">cv2.LINE_AA)</span>
+        <span class="s3">#fill data for legs</span>
+        <span class="s1">cv2.putText(image</span><span class="s0">, </span><span class="s4">'REPS'</span><span class="s0">, </span><span class="s1">(</span><span class="s2">452</span><span class="s1">+</span><span class="s2">15</span><span class="s0">,</span><span class="s2">12</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_SIMPLEX</span><span class="s0">, </span><span class="s2">0.5</span><span class="s0">, </span><span class="s1">(</span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s1">cv2.LINE_AA)</span>
+        <span class="s1">cv2.putText(image</span><span class="s0">, </span><span class="s1">str(legcounter)</span><span class="s0">, </span><span class="s1">( </span><span class="s2">452</span><span class="s1">+</span><span class="s2">10</span><span class="s0">, </span><span class="s2">60</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_SIMPLEX</span><span class="s0">, </span><span class="s2">2</span><span class="s0">, </span><span class="s1">(</span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span class="s1">)</span><span class="s0">, </span><span class="s2">2</span><span class="s0">, </span><span class="s1">cv2.LINE_AA)</span>
+        <span class="s3"># status data</span>
+        <span class="s1">cv2.putText(image</span><span class="s0">, </span><span class="s4">'Status'</span><span class="s0">, </span><span class="s1">(</span><span class="s2">452</span><span class="s1">+</span><span class="s2">65</span><span class="s0">,</span><span class="s2">12</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_SIMPLEX</span><span class="s0">, </span><span class="s2">0.5</span><span class="s0">, </span><span class="s1">(</span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s1">cv2.LINE_AA)</span>
+        <span class="s1">cv2.putText(image</span><span class="s0">, </span><span class="s1">str(legstage)</span><span class="s0">, </span><span class="s1">(</span><span class="s2">452</span><span class="s1">+</span><span class="s2">60</span><span class="s0">,</span><span class="s2">60</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_SIMPLEX</span><span class="s0">, </span><span class="s2">2</span><span class="s0">, </span><span class="s1">(</span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span class="s1">)</span><span class="s0">, </span><span class="s2">2</span><span class="s0">, </span><span class="s1">cv2.LINE_AA)</span>
+        <span class="s1">mp_drawing.draw_landmarks(image</span><span class="s0">, </span><span class="s1">results.pose_landmarks</span><span class="s0">, </span><span class="s1">mp_pose.POSE_CONNECTIONS</span><span class="s0">,</span>
+                                      <span class="s1">mp_drawing.DrawingSpec(color=(</span><span class="s2">245</span><span class="s0">, </span><span class="s2">117</span><span class="s0">, </span><span class="s2">66</span><span class="s1">)</span><span class="s0">, </span><span class="s1">thickness=</span><span class="s2">2</span><span class="s0">, </span><span class="s1">circle_radius=</span><span class="s2">2</span><span class="s1">)</span><span class="s0">,</span>
+                                      <span class="s1">mp_drawing.DrawingSpec(color=(</span><span class="s2">245</span><span class="s0">, </span><span class="s2">66</span><span class="s0">, </span><span class="s2">230</span><span class="s1">)</span><span class="s0">, </span><span class="s1">thickness=</span><span class="s2">2</span><span class="s0">, </span><span class="s1">circle_radius=</span><span class="s2">2</span><span class="s1">))</span>
+
+        <span class="s1">cv2.imshow(</span><span class="s4">'Mediapipe Feed'</span><span class="s0">, </span><span class="s1">image)</span>
+        <span class="s0">if </span><span class="s1">cv2.waitKey(</span><span class="s2">5</span><span class="s1">) &amp; </span><span class="s2">0xFF </span><span class="s1">== ord(</span><span class="s4">'q'</span><span class="s1">):</span>
+            <span class="s0">break</span>
+
+    <span class="s1">cap.release()</span>
+    <span class="s1">cv2.destroyAllWindows()</span>
+
+</pre>
+</body>
+</html>
